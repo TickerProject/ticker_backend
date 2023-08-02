@@ -37,11 +37,11 @@ export class Utils {
         return logger;
     }
 
-    static getAppConfig(): any {
+    static getAppConfig() {
         return configJSon.app;
     }
 
-    static getEnvConfig(): any {
+    static getEnvConfig() {
         return configJSon.env;
     }
 
@@ -53,8 +53,17 @@ export class Utils {
         return this.LOGGER;
     }
 
-    static getAuthorConfig(): any {
+    static getAuthorConfig() {
+        if (!authorizationJson) {
+            Logger.error('./src/resources/authorization.json file not found, please add the missing configuration');
+            throw  new Error('The authorization config not found');
+        }
+
         return authorizationJson;
+    }
+
+    static isDevEnv(): boolean {
+        return Utils.getEnvConfig().type === EnvironmentType.Development;
     }
 }
 

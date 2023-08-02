@@ -17,7 +17,7 @@ export class InMemoryUserRepo extends BaseRepository<User> {
     }
 
     findOne(id: string): Promise<User> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
            const user: User =  this.users.get(id);
            resolve(user);
         });

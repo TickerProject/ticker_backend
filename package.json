@@ -34,6 +34,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-oauth2-jwt-bearer": "^1.5.0",
+    "express-openid-connect": "^2.16.0",
     "express-requests-logger": "^4.0.0",
     "routing-controllers": "^0.10.4",
     "typedi": "^0.10.0",

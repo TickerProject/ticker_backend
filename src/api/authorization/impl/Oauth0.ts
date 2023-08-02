@@ -1,15 +1,21 @@
 import {Authorization} from "../Authorization";
-import e, {Express} from "express";
+import {Express, Handler} from "express";
 import {auth} from "express-oauth2-jwt-bearer";
+import {Utils} from "../../../utils/Utils";
 
 export class Oauth0 extends Authorization {
-    init(app: Express) {
 
-        app.use(auth({
-            jwksUri: 'http://issuer.example.com/well-known/jwks.json',
-            issuer: 'http://issuer.example.com',
-            audience: 'https://myapi.com'
-        }));
+    create(app: Express): Handler {
+        const { audience,  issuerBaseURL} = Utils.getAuthorConfig().oauth;
+        const checkJwt = auth({
+            jwksUri: `https://${issuerBaseURL}/well-known/jwks.json`,
+            issuer: issuerBaseURL,
+            audience: audience
+        });
+
+        app.use(checkJwt)
+
+        return checkJwt;
     }
 
 }

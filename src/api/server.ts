@@ -9,11 +9,12 @@ import {
     useExpressServer,
     useContainer as routingContainer
 } from 'routing-controllers';
-import {UserController} from "./controllers/UserController";
+import {UserController, AuthorizationController} from './controllers'
 import audit from 'express-requests-logger'
-import { auth } from 'express-oauth2-jwt-bearer'
+import {AuthorizationFactory} from "./authorization/AuthorizationFactory";
+import {Authorization} from "./authorization/Authorization";
 
-const {apiRoot, hostname, port}: any = Utils.getAppConfig();
+const {apiRoot, port} = Utils.getAppConfig();
 
 /**
  * Create express server
@@ -24,32 +25,29 @@ function createConfigureServer(): Express {
     const app = express();
     // get configs
 
-    const baseDir = __dirname;
+    // const baseDir = __dirname;
 
     // container
     routingContainer(Container);
 
-    // config app
-    // *[baseDir + `/**/controllers/*{.js, .ts}`]*/
+    const controllers = [];
+    controllers.push(UserController);
+
+    if (!Utils.isDevEnv()) { // TODO
+        const authorization: Authorization = AuthorizationFactory.getInstance();
+        authorization.create(app);
+        controllers.push(AuthorizationController);
+    }
+
     useExpressServer(app,
         {
             routePrefix: apiRoot,
             defaultErrorHandler: false,
-            controllers: [UserController],
-            cors: {
-                origin: '*', // (note: do not use this in production)
-            }
-
+            controllers: controllers
         });
 
-    app.use(audit());
-
-    function errorHandler (err, req, res, next) {
-        if (res.headersSent) {
-            return next(err)
-        }
-        res.status(500)
-        res.render('error', { error: err })
+    if (Utils.isDevEnv()) {
+        app.use(audit());
     }
 
     app.use(bodyParser.urlencoded({extended: false}));
@@ -59,6 +57,8 @@ function createConfigureServer(): Express {
         Logger.info({ message: req.url });
         next();
     });
+
+
 
     return app;
 }
@@ -82,7 +82,7 @@ function startServer(): void {
     //     });
     // });
 
-    process.on('error', (error, promise) => {
+    process.on('error', (error) => {
         Logger.error('Server', 'unhandledRejectionError :', `${error}`);
     });
 
